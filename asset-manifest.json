@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/YourVerse/static/css/main.a668ab3a.css",
+    "main.js": "/YourVerse/static/js/main.028b1789.js",
+    "static/media/hands.png": "/YourVerse/static/media/hands.d7b4c79bcd22f5982c63.png",
+    "static/media/moon.png": "/YourVerse/static/media/moon.003319f81e427eef8832.png",
+    "static/media/harrypotter.jpg": "/YourVerse/static/media/harrypotter.f0de33ee804e13fa6487.jpg",
+    "static/media/lesmis.jpg": "/YourVerse/static/media/lesmis.e7bbb4aef8802b6e54c8.jpg",
+    "static/media/hobbit.jpg": "/YourVerse/static/media/hobbit.d53046a1b448419bb26e.jpg",
+    "static/media/deadpoets.jpg": "/YourVerse/static/media/deadpoets.1dbcc526b2e0be906ad7.jpg",
+    "static/media/sky.jpg": "/YourVerse/static/media/sky.fe00cfd321fabaa99a18.jpg",
+    "static/media/wish.jpg": "/YourVerse/static/media/wish.17b604c28bac3ee73361.jpg",
+    "static/media/captain.jpg": "/YourVerse/static/media/captain.2ac145cbb9b5b495c20e.jpg",
+    "static/media/lamp.jpg": "/YourVerse/static/media/lamp.fdb20d7e8cd4985dc733.jpg",
+    "static/media/writing.jpg": "/YourVerse/static/media/writing.e7eedc45c697c411b263.jpg",
+    "static/media/extra.jpg": "/YourVerse/static/media/extra.61e3b2a21bf20436da8c.jpg",
+    "static/media/child.jpg": "/YourVerse/static/media/child.7fa2518aae02e20e6bde.jpg",
+    "static/media/speak.jpg": "/YourVerse/static/media/speak.3e334bbad8301e6b7479.jpg",
+    "static/media/seize.jpg": "/YourVerse/static/media/seize.0c083bbf39824af8b97b.jpg",
+    "static/media/heart.jpg": "/YourVerse/static/media/heart.8bf544757339d35bd49d.jpg",
+    "index.html": "/YourVerse/index.html",
+    "main.a668ab3a.css.map": "/YourVerse/static/css/main.a668ab3a.css.map",
+    "main.028b1789.js.map": "/YourVerse/static/js/main.028b1789.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a668ab3a.css",
+    "static/js/main.028b1789.js"
+  ]
+}
