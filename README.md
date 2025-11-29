@@ -24,7 +24,7 @@ Build & Deploy:
 Run npm run build
 Run npm run deploy
 
-Screenshots :
+Screenshots (in src/assets) :
 Drop_Down.png
 Write_after_login.png 
 write_edit_delete.png 
