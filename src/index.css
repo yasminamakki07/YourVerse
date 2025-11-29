@@ -1,0 +1,29 @@
+/* Shared background for all pages */
+.shared-bg {
+  background-color: #5C4033;
+  background-image:
+    radial-gradient(circle at 20% 20%, #7B5E57 1px, transparent 1px),
+    radial-gradient(circle at 80% 80%, #A47148 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Soft wrapper for navbar links and footer sentence */
+.soft-wrap {
+  background-color: #f3e9dc;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #a47148;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.soft-wrap:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 14px #a47148;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+
+
