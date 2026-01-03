@@ -14,7 +14,7 @@ import {
   useBreakpointValue
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";   // ✅ NEW
+import { useNavigate } from "react-router-dom";
 
 import extra from "../assets/extra.jpg";
 import writing from "../assets/writing.jpg";
@@ -22,6 +22,7 @@ import wish from "../assets/wish.jpg";
 import child from "../assets/child.jpg";
 import sky from "../assets/sky.jpg";
 import captain from "../assets/captain.jpg";
+import API_BASE_URL from "../config";
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
@@ -33,7 +34,7 @@ function Login() {
   const [submittedData, setSubmittedData] = useState(null);
   const [errors, setErrors] = useState({});
   const toast = useToast();
-  const navigate = useNavigate();   // ✅ NEW
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -63,29 +64,30 @@ function Login() {
 
     try {
       let response;
-     
-      if (isLogin) {
-  response = await fetch("https://yourverse-backend.onrender.com/api/users/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(
-      useEmailLogin
-        ? { email: formData.email, password: formData.password }
-        : { username: formData.username, password: formData.password }
-    )
-  });
-} else {
-  response = await fetch("https://yourverse-backend.onrender.com/api/users/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: formData.username,
-      email: formData.email,
-      password: formData.password
-    })
-  });
-}
 
+      if (isLogin) {
+        // Login request
+        response = await fetch(`${API_BASE_URL}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            useEmailLogin
+              ? { email: formData.email, password: formData.password }
+              : { username: formData.username, password: formData.password }
+          )
+        });
+      } else {
+        // Register request
+        response = await fetch(`${API_BASE_URL}/api/users/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+      }
 
       const data = await response.json();
 
@@ -260,9 +262,9 @@ function Login() {
             bg="#a47148"
             color="#f3e9dc"
             w="100%"
-                       _hover={{ bg: "#c2a083", transform: "scale(1.03)" }}
+            _hover={{ bg: "#c2a083", transform: "scale(1.03)" }}
           >
-            {isLogin ? "Log In" : "Sign Up"}
+                       {isLogin ? "Log In" : "Sign Up"}
           </Button>
         </VStack>
 

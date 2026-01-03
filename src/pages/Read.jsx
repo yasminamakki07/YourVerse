@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text, SimpleGrid, Button, VStack, Spinner, useToast } from "@chakra-ui/react";
+import API_BASE_URL from "../config";
+
 
 function Read() {
   const [publicQuotes, setPublicQuotes] = useState([]);
@@ -13,7 +15,7 @@ function Read() {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/quotes/public");
+        const response = await fetch(`${API_BASE_URL}/api/quotes/public`);
         const data = await response.json();
 
         if (response.ok) {
@@ -36,13 +38,9 @@ function Read() {
     if (!newText || !newText.trim()) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newText.trim() })
+      const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`,{ 
+        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, },
+       body: JSON.stringify({ content: newText.trim() }),
       });
 
       const data = await response.json();
@@ -75,12 +73,9 @@ function Read() {
     if (!window.confirm("Are you sure you want to delete this verse?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}`,
+      }, });
 
       const data = await response.json();
 
