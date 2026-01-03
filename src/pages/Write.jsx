@@ -17,6 +17,8 @@ import { useNavigate } from "react-router-dom";   // ✅ NEW
 import speak from "../assets/speak.jpg";
 import lamp from "../assets/lamp.jpg";
 import hands from "../assets/hands.png";
+import API_BASE_URL from "../config";
+
 
 function Write() {
   const [quote, setQuote] = useState("");
@@ -38,7 +40,7 @@ function Write() {
   if (!quote.trim()) return;
 
   try {
-    const response = await fetch("https://yourverse-backend.onrender.com/api/quotes/add", {
+    const response = await fetch(`${API_BASE_URL}/api/quotes/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
