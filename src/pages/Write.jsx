@@ -35,57 +35,58 @@ function Write() {
   }, [token, navigate]);
 
   const handleSubmit = async () => {
-    if (!quote.trim()) return;
+  if (!quote.trim()) return;
 
-    try {
-      const response = await fetch("http://localhost:5000/api/quotes/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: quote.trim(),
-          shared: sharePublicly
-        })
-      });
+  try {
+    const response = await fetch("https://yourverse-backend.onrender.com/api/quotes/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        content: quote.trim(),
+        shared: sharePublicly
+      })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        setQuote("");
-        setShowThankYou(true);
-        setTimeout(() => setShowThankYou(false), 9000);
+    if (response.ok) {
+      setQuote("");
+      setShowThankYou(true);
+      setTimeout(() => setShowThankYou(false), 9000);
 
-        toast({
-          title: "Verse saved ✨",
-          description: sharePublicly
-            ? "Your words have been shared — thank you for inspiring others."
-            : "Your verse is kept personal — a treasure just for you.",
-          status: "success",
-          duration: 5000,
-          isClosable: true
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: data.message || "Could not save your verse",
-          status: "error",
-          duration: 5000,
-          isClosable: true
-        });
-      }
-    } catch (err) {
-      console.error(err);
       toast({
-        title: "Server error",
-        description: "Could not connect to backend",
+        title: "Verse saved ✨",
+        description: sharePublicly
+          ? "Your words have been shared — thank you for inspiring others."
+          : "Your verse is kept personal — a treasure just for you.",
+        status: "success",
+        duration: 5000,
+        isClosable: true
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: data.message || "Could not save your verse",
         status: "error",
         duration: 5000,
         isClosable: true
       });
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast({
+      title: "Server error",
+      description: "Could not connect to backend",
+      status: "error",
+      duration: 5000,
+      isClosable: true
+    });
+  }
+};
+
 
   const paddingX = useBreakpointValue({ base: 4, md: 10 });
   const paddingY = useBreakpointValue({ base: 10, md: 20 });
