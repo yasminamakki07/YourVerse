@@ -22,6 +22,8 @@ import wish from "../assets/wish.jpg";
 import child from "../assets/child.jpg";
 import sky from "../assets/sky.jpg";
 import captain from "../assets/captain.jpg";
+import API_BASE_URL from "../config";
+
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
@@ -64,8 +66,8 @@ function Login() {
     try {
       let response;
      
-      if (isLogin) {
-  response = await fetch("https://yourverse-backend.onrender.com/api/users/login", {
+     if (isLogin) {
+  response = await fetch(`${API_BASE_URL}/api/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(
@@ -75,6 +77,17 @@ function Login() {
     )
   });
 } else {
+  response = await fetch(`${API_BASE_URL}/api/users/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: formData.username,
+      email: formData.email,
+      password: formData.password
+    })
+  });
+}
+ else {
   response = await fetch("https://yourverse-backend.onrender.com/api/users/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
