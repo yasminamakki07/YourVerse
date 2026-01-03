@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text, SimpleGrid, VStack, Spinner, Button, useToast } from "@chakra-ui/react";
+import API_BASE_URL from "../config";
+
 
 function MyPersonalVerses() {
   const [personalQuotes, setPersonalQuotes] = useState([]);
@@ -11,9 +13,7 @@ function MyPersonalVerses() {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/quotes/my", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await fetch(`${API_BASE_URL}/api/quotes/my`, { headers: { Authorization: `Bearer ${token}` } })
 
         const data = await response.json();
 
@@ -50,14 +50,10 @@ function MyPersonalVerses() {
     if (!newText || !newText.trim()) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newText.trim() })
-      });
+     const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, { method: "PUT", headers: 
+        { 
+       "Content-Type": "application/json", Authorization: `Bearer ${token}`
+        }, body: JSON.stringify({ content: newText.trim() }) });
 
       const data = await response.json();
 
@@ -84,10 +80,9 @@ function MyPersonalVerses() {
     if (!window.confirm("Are you sure you want to delete this verse?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+     const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${token}` }
+    });
 
       const data = await response.json();
 
