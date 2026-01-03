@@ -11,6 +11,7 @@ import Read from "./pages/Read";
 import Write from "./pages/Write";
 import Login from "./pages/Login";
 import MyPersonalVerses from "./pages/MyPersonalVerses";
+import API_BASE_URL from "./config";   // ✅ import the base URL
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -23,7 +24,7 @@ function ProtectedRoute({ children }) {
         return;
       }
       try {
-        const response = await fetch("http://localhost:5000/api/users/verify-token", {
+        const response = await fetch(`${API_BASE_URL}/api/users/verify-token`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await response.json();
@@ -55,7 +56,6 @@ function ProtectedRoute({ children }) {
   return valid ? children : <Navigate to="/login" replace />;
 }
 
-
 function App() {
   return (
     <Box className="shared-bg" minH="100vh" display="flex" flexDirection="column">
@@ -70,7 +70,7 @@ function App() {
           <Route path="/read" element={<Read />} />
           <Route path="/login" element={<Login />} />
 
-          {/* ✅ Protected routes (require verified JWT token) */}
+          {/* ✅ Protected routes */}
           <Route
             path="/write"
             element={
@@ -95,3 +95,4 @@ function App() {
 }
 
 export default App;
+
