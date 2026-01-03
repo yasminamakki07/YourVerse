@@ -143,7 +143,7 @@ function Login() {
         setTimeout(() => setSubmittedData(null), 5000);
 
         toast({
-          title: isLogin ? "Welcome back 🌙" : "Account created ✨",
+          title: isLogin ? "Welcome back 🌙" : "Account Created ✨",
           description: isLogin
             ? "You are now logged in."
             : data.message || "Your account has been created successfully.",
