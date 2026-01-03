@@ -35,7 +35,7 @@ function About() {
             lineHeight="1.8"
             textShadow="0 0 6px #a47148"
           >
-            “We don’t read and write poetry because it’s cute , we read and write poetry because we are members of the human race, and the human race... is Filled of Passion.”
+            “We don’t read and write Poetry because it’s cute , we read and write poetry because we are members of the human race, and the human race... is Filled of Passion.”
           </Text>
         </MotionBox>
 
