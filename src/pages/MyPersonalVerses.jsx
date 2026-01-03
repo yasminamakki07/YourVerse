@@ -1,53 +1,110 @@
 import React, { useEffect, useState } from "react";
-import { Box, Text, SimpleGrid, Button, VStack } from "@chakra-ui/react";
+import { Box, Text, SimpleGrid, VStack, Spinner, Button, useToast } from "@chakra-ui/react";
 
 function MyPersonalVerses() {
   const [personalQuotes, setPersonalQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
-  // ✅ Check if user is logged in
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  const currentUserId = localStorage.getItem("currentUserId");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("quotes") || "[]");
-    // ✅ Only keep verses that are personal AND belong to the current user
-    const privateQuotes = saved.filter(
-      q => q.shared === false && q.userId === currentUserId
-    );
-    setPersonalQuotes(privateQuotes);
-  }, [currentUserId]);
+    const fetchQuotes = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/quotes/my", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-  const handleDelete = (index) => {
-    const updatedQuotes = [...personalQuotes];
-    const toDelete = updatedQuotes[index];
+        const data = await response.json();
 
-    // Remove from localStorage
-    const allQuotes = JSON.parse(localStorage.getItem("quotes") || "[]");
-    const filtered = allQuotes.filter(
-      q => !(q.text === toDelete.text && q.userId === toDelete.userId)
-    );
-    localStorage.setItem("quotes", JSON.stringify(filtered));
+        if (response.ok) {
+          setPersonalQuotes(data);
+        } else {
+          toast({
+            title: "Error fetching verses",
+            description: data.message || "Could not load your personal verses",
+            status: "error",
+            duration: 4000,
+            isClosable: true
+          });
+        }
+      } catch (err) {
+        console.error("Server error:", err);
+        toast({
+          title: "Server error",
+          description: "Could not connect to backend",
+          status: "error",
+          duration: 4000,
+          isClosable: true
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    updatedQuotes.splice(index, 1);
-    setPersonalQuotes(updatedQuotes);
+    fetchQuotes();
+  }, [token, toast]);
+
+  const handleEdit = async (id, oldContent) => {
+    const newText = prompt("Edit your verse:", oldContent);
+    if (!newText || !newText.trim()) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newText.trim() })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPersonalQuotes((prev) =>
+          prev.map((q) => (q.id === id ? { ...q, content: newText.trim() } : q))
+        );
+        toast({ title: "Verse updated ✨", status: "success", duration: 4000, isClosable: true });
+      } else {
+        toast({
+          title: "Error updating verse",
+          description: data.message,
+          status: "error",
+          duration: 4000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error("Error editing quote:", err);
+    }
   };
 
-  const handleEdit = (index) => {
-    const newText = prompt("Edit your verse:", personalQuotes[index].text);
-    if (newText && newText.trim()) {
-      const updatedQuotes = [...personalQuotes];
-      updatedQuotes[index].text = newText.trim();
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this verse?")) return;
 
-      // Update localStorage
-      const allQuotes = JSON.parse(localStorage.getItem("quotes") || "[]");
-      const updatedAll = allQuotes.map(q =>
-        q.text === personalQuotes[index].text && q.userId === personalQuotes[index].userId
-          ? { ...q, text: newText.trim() }
-          : q
-      );
-      localStorage.setItem("quotes", JSON.stringify(updatedAll));
+    try {
+      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      setPersonalQuotes(updatedQuotes);
+      const data = await response.json();
+
+      if (response.ok) {
+        setPersonalQuotes((prev) => prev.filter((q) => q.id !== id));
+        toast({ title: "Verse deleted ✨", status: "success", duration: 4000, isClosable: true });
+      } else {
+        toast({
+          title: "Error deleting verse",
+          description: data.message,
+          status: "error",
+          duration: 4000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error("Error deleting quote:", err);
     }
   };
 
@@ -74,24 +131,10 @@ function MyPersonalVerses() {
         ✧ My Personal Verses ✧
       </Text>
 
-      {!isAuthenticated ? (
-        <Text
-          fontSize="lg"
-          color="#f3e9dc"
-          textAlign="center"
-          fontStyle="italic"
-          mt={20}
-        >
-          You must log in to view your personal verses ✨
-        </Text>
+      {loading ? (
+        <Spinner size="xl" color="#f3e9dc" mt={20} />
       ) : personalQuotes.length === 0 ? (
-        <Text
-          fontSize="lg"
-          color="#f3e9dc"
-          textAlign="center"
-          fontStyle="italic"
-          mt={20}
-        >
+        <Text fontSize="lg" color="#f3e9dc" textAlign="center" fontStyle="italic" mt={20}>
           You haven’t kept any personal verses yet. Write something and choose not to share it.
         </Text>
       ) : (
@@ -100,7 +143,7 @@ function MyPersonalVerses() {
             const style = styles[index % styles.length];
             return (
               <Box
-                key={index}
+                key={quote.id || index}
                 bg={style.bg}
                 p={6}
                 borderRadius={style.borderRadius}
@@ -111,34 +154,34 @@ function MyPersonalVerses() {
                 fontFamily="'Cormorant Garamond', serif"
               >
                 <Text fontSize="lg" color="#5C4033" textAlign="center" mb={4}>
-                  {quote.text}
+                  {quote.content}
+                </Text>
+                <Text fontSize="sm" color="#7B5E57" textAlign="center" mb={4}>
+                  {new Date(quote.created_at).toLocaleString()}
                 </Text>
 
-                {/* ✅ Edit/Delete only if logged in AND verse belongs to current user */}
-                {isAuthenticated && quote.userId === currentUserId && (
-                  <VStack spacing={2}>
-                    <Button
-                      size="sm"
-                      bg="#f3e9dc"
-                      color="#5C4033"
-                      fontFamily="'Cormorant Garamond', serif"
-                      _hover={{ bg: "#e4d1b9" }}
-                      onClick={() => handleEdit(index)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      bg="#f3e9dc"
-                      color="#5C4033"
-                      fontFamily="'Cormorant Garamond', serif"
-                      _hover={{ bg: "#e4d1b9" }}
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </Button>
-                  </VStack>
-                )}
+                <VStack spacing={2}>
+                  <Button
+                    size="sm"
+                    bg="#f3e9dc"
+                    color="#5C4033"
+                    fontFamily="'Cormorant Garamond', serif"
+                    _hover={{ bg: "#e4d1b9" }}
+                    onClick={() => handleEdit(quote.id, quote.content)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    bg="#f3e9dc"
+                    color="#5C4033"
+                    fontFamily="'Cormorant Garamond', serif"
+                    _hover={{ bg: "#e4d1b9" }}
+                    onClick={() => handleDelete(quote.id)}
+                  >
+                    Delete
+                  </Button>
+                </VStack>
               </Box>
             );
           })}

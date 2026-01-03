@@ -1,15 +1,16 @@
 import React from 'react';
-import { Box, Text, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
 
 function Footer() {
-  const fontSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'xl' });
-  const paddingY = useBreakpointValue({ base: 3, md: 4, lg: 6 });
-
   return (
-    <Box py={paddingY} textAlign="center" bg="transparent">
+    <Box 
+      py={{ base: 3, md: 4, lg: 6 }} 
+      textAlign="center" 
+      bg="transparent"
+    >
       <Box className="soft-wrap">
         <Text
-          fontSize={fontSize}
+          fontSize={{ base: 'sm', md: 'md', lg: 'xl' }}
           fontWeight="bold"
           color="#5C4033"
           fontFamily="'Playfair Display', serif"

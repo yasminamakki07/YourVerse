@@ -1,50 +1,108 @@
 import React, { useEffect, useState } from "react";
-import { Box, Text, SimpleGrid, Button, VStack } from "@chakra-ui/react";
+import { Box, Text, SimpleGrid, Button, VStack, Spinner, useToast } from "@chakra-ui/react";
 
-function Read({ quotes }) {
-  const [storedQuotes, setStoredQuotes] = useState([]);
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true"; // ✅ check login
-  const currentUserId = localStorage.getItem("currentUserId");
+function Read() {
+  const [publicQuotes, setPublicQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
+
+  const token = localStorage.getItem("token");
+  const isAuthenticated = Boolean(token);
+  const currentUserId = parseInt(localStorage.getItem("currentUserId"), 10);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("quotes") || "[]");
-    // ✅ Only keep verses that are shared publicly
-    const publicQuotes = saved.filter(q => q.shared !== false);
-    setStoredQuotes(publicQuotes);
-  }, [quotes]);
+    const fetchQuotes = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/quotes/public");
+        const data = await response.json();
 
-  const handleDelete = (index) => {
-    const updatedQuotes = [...storedQuotes];
-    const toDelete = updatedQuotes[index];
-    updatedQuotes.splice(index, 1);
+        if (response.ok) {
+          setPublicQuotes(data);
+        } else {
+          console.error("Error fetching public quotes:", data.message);
+        }
+      } catch (err) {
+        console.error("Server error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Update localStorage
-    const allQuotes = JSON.parse(localStorage.getItem("quotes") || "[]");
-    const filtered = allQuotes.filter(
-      q => !(q.text === toDelete.text && q.userId === toDelete.userId)
-    );
-    localStorage.setItem("quotes", JSON.stringify(filtered));
+    fetchQuotes();
+  }, []);
 
-    setStoredQuotes(updatedQuotes);
+  const handleEdit = async (id, oldContent) => {
+    const newText = prompt("Edit your verse:", oldContent);
+    if (!newText || !newText.trim()) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newText.trim() })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPublicQuotes((prev) =>
+          prev.map((q) => (q.id === id ? { ...q, content: newText.trim() } : q))
+        );
+        toast({
+          title: "Verse updated ✨",
+          status: "success",
+          duration: 4000,
+          isClosable: true
+        });
+      } else {
+        toast({
+          title: "Error updating verse",
+          description: data.message,
+          status: "error",
+          duration: 4000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error("Error editing quote:", err);
+    }
   };
 
-  const handleEdit = (index) => {
-    const newText = prompt("Edit your verse:", storedQuotes[index].text);
-    if (newText && newText.trim()) {
-      const updatedQuotes = [...storedQuotes];
-      updatedQuotes[index].text = newText.trim();
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this verse?")) return;
 
-      // Update localStorage
-      const allQuotes = JSON.parse(localStorage.getItem("quotes") || "[]");
-      const updatedAll = allQuotes.map((q) =>
-        q.text === storedQuotes[index].text &&
-        q.userId === storedQuotes[index].userId
-          ? { ...q, text: newText.trim() }
-          : q
-      );
-      localStorage.setItem("quotes", JSON.stringify(updatedAll));
+    try {
+      const response = await fetch(`http://localhost:5000/api/quotes/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
 
-      setStoredQuotes(updatedQuotes);
+      const data = await response.json();
+
+      if (response.ok) {
+        setPublicQuotes((prev) => prev.filter((q) => q.id !== id));
+        toast({
+          title: "Verse deleted ✨",
+          status: "success",
+          duration: 4000,
+          isClosable: true
+        });
+      } else {
+        toast({
+          title: "Error deleting verse",
+          description: data.message,
+          status: "error",
+          duration: 4000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error("Error deleting quote:", err);
     }
   };
 
@@ -57,12 +115,7 @@ function Read({ quotes }) {
   ];
 
   return (
-    <Box
-      className="shared-bg"
-      minH="calc(100vh - 120px)"
-      px={[4, 6, 10]}
-      py={[10, 16, 20]}
-    >
+    <Box className="shared-bg" minH="calc(100vh - 120px)" px={[4, 6, 10]} py={[10, 16, 20]}>
       <Text
         fontSize={["lg", "2xl", "3xl", "4xl"]}
         fontWeight="bold"
@@ -72,14 +125,13 @@ function Read({ quotes }) {
         textAlign="center"
         letterSpacing="wide"
         textShadow="1px 1px #7B5E57"
-        whiteSpace="nowrap"
-        overflow="hidden"
-        textOverflow="ellipsis"
       >
         ✧ Traces of Thoughts ✧
       </Text>
 
-      {storedQuotes.length === 0 ? (
+      {loading ? (
+        <Spinner size="xl" color="#f3e9dc" mt={20} />
+      ) : publicQuotes.length === 0 ? (
         <Text
           fontSize="lg"
           color="#f3e9dc"
@@ -91,11 +143,11 @@ function Read({ quotes }) {
         </Text>
       ) : (
         <SimpleGrid columns={[1, 2, 3]} spacing={10} mt={8}>
-          {storedQuotes.map((quote, index) => {
+          {publicQuotes.map((quote, index) => {
             const style = styles[index % styles.length];
             return (
               <Box
-                key={index}
+                key={quote.id || index}
                 bg={style.bg}
                 p={6}
                 borderRadius={style.borderRadius}
@@ -106,36 +158,37 @@ function Read({ quotes }) {
                 fontFamily="'Cormorant Garamond', serif"
               >
                 <Text fontSize="lg" color="#5C4033" textAlign="center" mb={4}>
-                  {quote.text}
+                  {quote.content}
+                </Text>
+                <Text fontSize="sm" color="#7B5E57" textAlign="center" mb={4}>
+                  by {quote.username} • {new Date(quote.created_at).toLocaleString()}
                 </Text>
 
-                <VStack spacing={2}>
-                  {/* ✅ Edit/Delete only if logged in AND verse belongs to current user */}
-                  {isAuthenticated && quote.userId === currentUserId && (
-                    <>
-                      <Button
-                        size="sm"
-                        bg="#f3e9dc"
-                        color="#5C4033"
-                        fontFamily="'Cormorant Garamond', serif"
-                        _hover={{ bg: "#e4d1b9" }}
-                        onClick={() => handleEdit(index)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        bg="#f3e9dc"
-                        color="#5C4033"
-                        fontFamily="'Cormorant Garamond', serif"
-                        _hover={{ bg: "#e4d1b9" }}
-                        onClick={() => handleDelete(index)}
-                      >
-                        Delete
-                      </Button>
-                    </>
-                  )}
-                </VStack>
+                {/* ✅ Edit/Delete only if logged in AND verse belongs to current user */}
+                {isAuthenticated && quote.user_id === currentUserId && (
+                  <VStack spacing={2}>
+                    <Button
+                      size="sm"
+                      bg="#f3e9dc"
+                      color="#5C4033"
+                      fontFamily="'Cormorant Garamond', serif"
+                      _hover={{ bg: "#e4d1b9" }}
+                      onClick={() => handleEdit(quote.id, quote.content)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      bg="#f3e9dc"
+                      color="#5C4033"
+                      fontFamily="'Cormorant Garamond', serif"
+                      _hover={{ bg: "#e4d1b9" }}
+                      onClick={() => handleDelete(quote.id)}
+                    >
+                      Delete
+                    </Button>
+                  </VStack>
+                )}
               </Box>
             );
           })}

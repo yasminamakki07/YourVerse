@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Box,
   Text,
-  
   Image,
   HStack,
   Button,
@@ -16,6 +15,7 @@ import seize from "../assets/seize.jpg";
 const MotionImage = motion(Image);
 const MotionBox = motion(Box);
 
+// ✅ Quotes moved outside the component for easier backend replacement later
 const quotes = [
   "Carpe diem. Seize the day. Make your lives extraordinary.",
   "No matter what anybody tells you, words and ideas can change the world.",
@@ -103,7 +103,6 @@ function YourVerse() {
           fontSize={["md", "lg", "xl"]}
           fontWeight="bold"
           fontFamily="'Cormorant Garamond', serif"
-          // ✅ Grow bigger on hover and click, no color change
           _hover={{ transform: "scale(1.1)" }}
           _active={{ transform: "scale(1.15)", bg: "#a47148" }}
         >

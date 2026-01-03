@@ -14,13 +14,11 @@ import {
   useBreakpointValue
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";   // ✅ NEW
 
-// Login images
 import extra from "../assets/extra.jpg";
 import writing from "../assets/writing.jpg";
 import wish from "../assets/wish.jpg";
-
-// Signup images
 import child from "../assets/child.jpg";
 import sky from "../assets/sky.jpg";
 import captain from "../assets/captain.jpg";
@@ -35,10 +33,10 @@ function Login() {
   const [submittedData, setSubmittedData] = useState(null);
   const [errors, setErrors] = useState({});
   const toast = useToast();
+  const navigate = useNavigate();   // ✅ NEW
 
   const validate = () => {
     const newErrors = {};
-
     if (isLogin) {
       if (useEmailLogin) {
         if (!formData.email) newErrors.email = "Email is required";
@@ -55,39 +53,84 @@ function Login() {
         newErrors.email = "Enter a valid email";
       }
     }
-
     if (!formData.password) newErrors.password = "Password is required";
-
     setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    if (Object.keys(newErrors).length === 0) {
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    try {
+      let response;
+      if (isLogin) {
+        response = await fetch("http://localhost:5000/api/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            useEmailLogin
+              ? { email: formData.email, password: formData.password }
+              : { username: formData.username, password: formData.password }
+          )
+        });
+      } else {
+        response = await fetch("http://localhost:5000/api/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+      }
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+        if (data.user && data.user.id) {
+          localStorage.setItem("currentUserId", data.user.id);
+        }
+
+        setSubmittedData(formData);
+        setTimeout(() => setSubmittedData(null), 5000);
+
+        toast({
+          title: isLogin ? "Welcome back 🌙" : "Account created ✨",
+          description: isLogin
+            ? "You are now logged in."
+            : data.message || "Your account has been created successfully.",
+          status: "success",
+          duration: 5000,
+          isClosable: true
+        });
+
+        setFormData({ username: "", email: "", password: "" });
+        setErrors({});
+
+        navigate("/write");   // ✅ Redirect to Write page
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Something went wrong",
+          status: "error",
+          duration: 5000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error(err);
       toast({
-        title: isLogin ? "Welcome back 🌙" : "Account created ✨",
-        description: isLogin ? "" : "Your poetic journey begins.",
-        status: "success",
+        title: "Server error",
+        description: "Could not connect to backend",
+        status: "error",
         duration: 5000,
         isClosable: true
       });
     }
-
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (!validate()) return;
-
-    setSubmittedData(formData);
-    setTimeout(() => setSubmittedData(null), 5000);
-
-    // ✅ Mark user as logged in
-    localStorage.setItem("isAuthenticated", "true");
-
-    // ✅ Save current user identity (username preferred, fallback to email)
-    const userId = formData.username || formData.email;
-    localStorage.setItem("currentUserId", userId);
-
-    setFormData({ username: "", email: "", password: "" });
-    setErrors({});
   };
 
   const boxPadding = useBreakpointValue({ base: 4, md: 6, lg: 8 });
@@ -129,10 +172,9 @@ function Login() {
             zIndex={10}
           >
             <Text fontSize="sm">
-              <strong>{isLogin ? "Logging in with:" : "Signing up with:"}</strong><br />
+              <strong>{isLogin ? "Logged in with:" : "Signed up with:"}</strong><br />
               {submittedData.username && <>Username: {submittedData.username}<br /></>}
               {submittedData.email && <>Email: {submittedData.email}<br /></>}
-              Password: {submittedData.password}
             </Text>
           </MotionBox>
         )}
@@ -216,7 +258,7 @@ function Login() {
             bg="#a47148"
             color="#f3e9dc"
             w="100%"
-            _hover={{ bg: "#c2a083", transform: "scale(1.03)" }}
+                       _hover={{ bg: "#c2a083", transform: "scale(1.03)" }}
           >
             {isLogin ? "Log In" : "Sign Up"}
           </Button>
@@ -234,9 +276,6 @@ function Login() {
               setSubmittedData(null);
               setErrors({});
               setUseEmailLogin(false);
-              // ✅ Clear auth when switching modes
-              localStorage.removeItem("isAuthenticated");
-              localStorage.removeItem("currentUserId");
             }}
           >
             {isLogin ? "Sign up" : "Log in"}
@@ -253,7 +292,7 @@ function Login() {
             alt={`img-${idx}`}
             boxSize={imageSize}
             objectFit="cover"
-            filter="drop-shadow(0 0 6px #a47148)"
+            filter="drop-shadow(0 0 6px  #a47148)" 
             flexShrink={0}
           />
         ))}
@@ -263,4 +302,3 @@ function Login() {
 }
 
 export default Login;
-

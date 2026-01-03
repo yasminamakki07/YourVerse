@@ -1,30 +1,25 @@
 import React from "react";
-import { Box, Text, VStack, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
 const MotionText = motion(Text);
 const MotionBox = motion(Box);
 
 function About() {
-  const quoteFontSize = useBreakpointValue({ base: "md", md: "lg" });
-  const monologueFontSize = useBreakpointValue({ base: "lg", md: "xl" });
-  const paddingX = useBreakpointValue({ base: 4, md: 10 });
-  const paddingY = useBreakpointValue({ base: 10, md: 20 });
-
   return (
     <Box
       className="shared-bg"
       minH="calc(100vh - 120px)"
-      px={paddingX}
-      py={paddingY}
+      px={{ base: 4, md: 10 }}
+      py={{ base: 10, md: 20 }}
       display="flex"
       justifyContent="center"
       alignItems="center"
     >
-      <VStack spacing={[8, 10]} maxW="800px" w="100%">
+      <VStack spacing={{ base: 8, md: 10 }} maxW="800px" w="100%">
         <MotionBox
           bg="#f3e9dc"
-          p={[6, 8]}
+          p={{ base: 6, md: 8 }}
           borderRadius="xl"
           boxShadow="xl"
           fontFamily="'Cormorant Garamond', serif"
@@ -34,7 +29,7 @@ function About() {
           transition={{ duration: 1 }}
         >
           <Text
-            fontSize={quoteFontSize}
+            fontSize={{ base: "md", md: "lg" }}
             color="#5C4033"
             textAlign="center"
             lineHeight="1.8"
@@ -44,7 +39,7 @@ function About() {
           </Text>
         </MotionBox>
 
-        <VStack spacing={[3, 4]}>
+        <VStack spacing={{ base: 3, md: 4 }}>
           {[
             "These words are not just lines from a film — they are a truth we often forget.",
             "Words are emotions, emotions that ache to be heard, to be felt, to be understood.",
@@ -54,7 +49,7 @@ function About() {
           ].map((line, index) => (
             <MotionText
               key={index}
-              fontSize={monologueFontSize}
+              fontSize={{ base: "lg", md: "xl" }}
               color="#f3e9dc"
               fontFamily="'Cormorant Garamond', serif"
               textAlign="center"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Text,
@@ -10,8 +10,10 @@ import {
   Image,
   HStack,
   useBreakpointValue,
-  Checkbox
+  Checkbox,
+  useToast
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";   // ✅ NEW
 import speak from "../assets/speak.jpg";
 import lamp from "../assets/lamp.jpg";
 import hands from "../assets/hands.png";
@@ -19,30 +21,70 @@ import hands from "../assets/hands.png";
 function Write() {
   const [quote, setQuote] = useState("");
   const [showThankYou, setShowThankYou] = useState(false);
-  const [sharePublicly, setSharePublicly] = useState(true); // ✅ toggle
+  const [sharePublicly, setSharePublicly] = useState(true);
+  const toast = useToast();
+  const navigate = useNavigate();   // ✅ NEW
 
-  // ✅ Check if user is logged in
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  const currentUserId = localStorage.getItem("currentUserId");
+  // ✅ Check token
+  const token = localStorage.getItem("token");
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");   // ✅ Redirect if not logged in
+    }
+  }, [token, navigate]);
+
+  const handleSubmit = async () => {
     if (!quote.trim()) return;
 
-    const newQuote = {
-      text: quote.trim(),
-      shared: sharePublicly, 
-      userId: currentUserId 
-      
-    };
+    try {
+      const response = await fetch("http://localhost:5000/api/quotes/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content: quote.trim(),
+          shared: sharePublicly
+        })
+      });
 
-    const storedQuotes = JSON.parse(localStorage.getItem("quotes") || "[]");
-    const updatedQuotes = [...storedQuotes, newQuote];
-    localStorage.setItem("quotes", JSON.stringify(updatedQuotes));
+      const data = await response.json();
 
-    setQuote("");
-    setShowThankYou(true);
+      if (response.ok) {
+        setQuote("");
+        setShowThankYou(true);
+        setTimeout(() => setShowThankYou(false), 9000);
 
-    setTimeout(() => setShowThankYou(false), 9000);
+        toast({
+          title: "Verse saved ✨",
+          description: sharePublicly
+            ? "Your words have been shared — thank you for inspiring others."
+            : "Your verse is kept personal — a treasure just for you.",
+          status: "success",
+          duration: 5000,
+          isClosable: true
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Could not save your verse",
+          status: "error",
+          duration: 5000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Server error",
+        description: "Could not connect to backend",
+        status: "error",
+        duration: 5000,
+        isClosable: true
+      });
+    }
   };
 
   const paddingX = useBreakpointValue({ base: 4, md: 10 });
@@ -85,75 +127,61 @@ function Write() {
           Let your thoughts unfold like a letter
         </Text>
 
-        {isAuthenticated ? (
-          <>
-            <Textarea
-              value={quote}
-              onChange={(e) => setQuote(e.target.value)}
-              placeholder="Your words are important...."
-              size="lg"
-              resize="none"
-              minH="150px"
-              fontSize={["md", "lg"]}
-              borderRadius="md"
-              bg="#fffaf3"
-              color="#5C4033"
-              _placeholder={{ color: "#a47148" }}
-            />
+        <Textarea
+          value={quote}
+          onChange={(e) => setQuote(e.target.value)}
+          placeholder="Your words are important...."
+          size="lg"
+          resize="none"
+          minH="150px"
+          fontSize={["md", "lg"]}
+          borderRadius="md"
+          bg="#fffaf3"
+          color="#5C4033"
+          _placeholder={{ color: "#a47148" }}
+        />
 
-            <Checkbox
-              isChecked={sharePublicly}
-              onChange={(e) => setSharePublicly(e.target.checked)}
-              color="#5C4033"
-            >
-              Share publicly
-            </Checkbox>
+        <Checkbox
+          isChecked={sharePublicly}
+          onChange={(e) => setSharePublicly(e.target.checked)}
+          color="#5C4033"
+        >
+          Share publicly
+        </Checkbox>
 
-            <Button
-              onClick={handleSubmit}
-              bg="#a47148"
-              color="#f3e9dc"
-              px={8}
-              py={6}
-              fontSize={buttonFontSize}
-              borderRadius="full"
-              width={["100%", "auto"]}
-              _hover={{ transform: "scale(1.05)" }}
-              _active={{ transform: "scale(1.1)", bg: "#a47148" }}
-            >
-              Pin Your Thought
-            </Button>
+        <Button
+          onClick={handleSubmit}
+          bg="#a47148"
+          color="#f3e9dc"
+          px={8}
+          py={6}
+          fontSize={buttonFontSize}
+          borderRadius="full"
+          width={["100%", "auto"]}
+          _hover={{ transform: "scale(1.05)" }}
+          _active={{ transform: "scale(1.1)", bg: "#a47148" }}
+        >
+          Pin Your Thought
+        </Button>
 
-            {showThankYou && (
-              <Alert
-                status="success"
-                borderRadius="md"
-                bg="#d8c3a5"
-                color="#5C4033"
-                fontSize="md"
-                fontFamily="'Cormorant Garamond', serif"
-                textAlign="center"
-              >
-                <AlertIcon />
-                {sharePublicly
-                  ? "Your words have been shared — thank you for inspiring others ✨"
-                  : "Your verse is kept personal — a treasure just for you ❤️"}
-              </Alert>
-            )}
-          </>
-        ) : (
-          <Text
-            color="#7B5E57"
-            fontSize="lg"
+        {showThankYou && (
+          <Alert
+            status="success"
+            borderRadius="md"
+            bg="#d8c3a5"
+            color="#5C4033"
+            fontSize="md"
+            fontFamily="'Cormorant Garamond', serif"
             textAlign="center"
-            fontStyle="italic"
           >
-            You must log in to write a verse ✨
-          </Text>
+            <AlertIcon />
+            {sharePublicly
+              ? "Your words have been shared — thank you for inspiring others ✨"
+              : "Your verse is kept personal — a treasure just for you ❤️"}
+          </Alert>
         )}
       </VStack>
 
-      {/* Images always side-by-side and shrink on small screens */}
       <HStack spacing={[4, 6, 10]} mt={10} justify="center" wrap="wrap">
         <Image
           src={speak}

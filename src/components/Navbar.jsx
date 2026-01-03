@@ -13,10 +13,14 @@ const navItems = [
 
 function Navbar() {
   const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
+  // Check if a token exists in localStorage
+  const token = localStorage.getItem("token");
+  const isAuthenticated = Boolean(token);
+
+  // Logout clears the token and redirects
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -50,9 +54,9 @@ function Navbar() {
                 fontFamily="'Cormorant Garamond', serif"
                 px={2}
                 cursor="pointer"
-                _hover={{ textDecoration: "none", color: "#5C4033" }} 
+                _hover={{ textDecoration: "none", color: "#5C4033" }}
               >
-                ☰ My Space 
+                ☰ My Space
               </MenuButton>
             </Box>
             <MenuList bg="#f3e9dc" borderColor="#a47148">
@@ -89,7 +93,7 @@ function Navbar() {
               px={2}
               _hover={{ textDecoration: "none", color: "#5C4033" }}
             >
-              Login/Sign-Up
+              Login / Sign-Up
             </Link>
           </Box>
         )}

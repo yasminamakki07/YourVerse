@@ -9,6 +9,7 @@ import deadpoets from "../assets/deadpoets.jpg";
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
+// ✅ Sample data (easy to replace with backend later)
 const writings = [
   {
     title: "Victor Hugo – Les Misérables",
@@ -83,7 +84,6 @@ function Impact() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 + index * 0.2 }}
-            _hover={{}}
           >
             <HStack spacing={6} align="flex-start">
               <Image
